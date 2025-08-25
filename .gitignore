@@ -1,0 +1,10 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Tooling (future)
+node_modules/
+dist/
+coverage/
