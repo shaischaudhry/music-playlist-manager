@@ -5,29 +5,30 @@ import { filterAlbums }          from "./utils.js";
 import {
   getAllPlaylists,
   createPlaylist,
-  deletePlaylist
+  deletePlaylist,
+  toggleSongInPlaylist
 } from "./playlists.js";
 
 //
-// 1. Grab all the DOM elements we’ll need
+// 1. Grab DOM elements
 //
-const artistIdInput   = document.getElementById("artistId");
-const loadBtn         = document.getElementById("loadAlbumsBtn");
-const searchInput     = document.getElementById("searchQuery");
-const albumsContainer = document.getElementById("albums");
+const artistIdInput    = document.getElementById("artistId");
+const loadBtn          = document.getElementById("loadAlbumsBtn");
+const searchInput      = document.getElementById("searchQuery");
+const albumsContainer  = document.getElementById("albums");
 
-const playlistForm    = document.getElementById("playlistForm");
-const playlistName    = document.getElementById("playlistName");
-const playlistDesc    = document.getElementById("playlistDesc");
-const playlistList    = document.getElementById("playlistList");
+const playlistForm     = document.getElementById("playlistForm");
+const playlistName     = document.getElementById("playlistName");
+const playlistDesc     = document.getElementById("playlistDesc");
+const playlistList     = document.getElementById("playlistList");
 
 //
-// 2. In-memory cache of the last fetched album list
+// 2. In-memory cache for fetched albums
 //
 let albumCache = [];
 
 //
-// 3. Renders album cards (or “no albums” message) into albumsContainer
+// 3. Render album cards (with “Add to playlist” dropdown)
 //
 function renderAlbums(albums) {
   albumsContainer.innerHTML = "";
@@ -37,28 +38,49 @@ function renderAlbums(albums) {
     return;
   }
 
+  // Get current playlists once
+  const playlists = getAllPlaylists();
+
   albums.forEach(album => {
     const card = document.createElement("div");
     card.className = "album-card";
 
-    // Inline onerror fallback so we never try to load “null”
+    // Build card HTML
     card.innerHTML = `
       <img
         src="${album.strAlbumThumb || '/images/default-thumb.jpeg'}"
         alt="${album.strAlbum || 'Unknown Title'} cover"
         onerror="this.src='/images/default-thumb.jpeg'"
       />
-      <h3>${album.strAlbum}</h3>
-      <p>${album.intYearReleased}</p>
-      <p>${album.strGenre || 'Unknown genre'}</p>
+      <h3>${album.strAlbum || 'Unknown Title'}</h3>
+      <p>${album.intYearReleased || 'Year N/A'}</p>
+      <p>${album.strGenre || 'Genre N/A'}</p>
+
+      <select class="playlist-select" data-album-id="${album.idAlbum}">
+        <option value="">+ Add to playlist…</option>
+        ${playlists
+          .map(pl => `<option value="${pl.id}">${pl.name}</option>`)
+          .join("")}
+      </select>
     `;
+
+    // Wire up the dropdown change event
+    const select = card.querySelector(".playlist-select");
+    select.addEventListener("change", e => {
+      const playlistId = e.target.value;
+      if (!playlistId) return;
+
+      toggleSongInPlaylist(playlistId, album.idAlbum);
+      renderPlaylists();
+      e.target.value = "";
+    });
 
     albumsContainer.appendChild(card);
   });
 }
 
 //
-// 4. Renders playlist cards (or “no playlists” message) into playlistList
+// 4. Render playlist cards
 //
 function renderPlaylists() {
   playlistList.innerHTML = "";
@@ -72,27 +94,25 @@ function renderPlaylists() {
   all.forEach(pl => {
     const card = document.createElement("div");
     card.className = "playlist-card";
-
     card.innerHTML = `
       <h3>${pl.name}</h3>
       <p>${pl.description || ""}</p>
       <p>Tracks: ${pl.songs.length}</p>
       <button class="remove" data-id="${pl.id}">&times;</button>
     `;
-
     playlistList.appendChild(card);
   });
 }
 
 //
-// 5. Enable/disable Load button based on Artist ID input
+// 5. Enable/disable Load button based on input
 //
 artistIdInput.addEventListener("input", () => {
   loadBtn.disabled = artistIdInput.value.trim().length === 0;
 });
 
 //
-// 6. Load Albums: fetch, cache, and render
+// 6. Fetch and display albums on button click
 //
 loadBtn.addEventListener("click", async () => {
   const id = artistIdInput.value.trim();
@@ -100,16 +120,16 @@ loadBtn.addEventListener("click", async () => {
 
   try {
     const albums = await fetchAlbumsByArtistId(id);
-    albumCache = albums;         // keep for filtering
+    albumCache = albums;
     renderAlbums(albumCache);
   } catch (err) {
+    console.error("Error fetching albums:", err);
     albumsContainer.innerHTML = `<p class="error">Error: ${err.message}</p>`;
-    console.error("fetchAlbumsByArtistId failed:", err);
   }
 });
 
 //
-// 7. Filter displayed albums as the user types
+// 7. Filter displayed albums as user types
 //
 searchInput.addEventListener("input", () => {
   const filtered = filterAlbums(albumCache, searchInput.value);
@@ -117,32 +137,32 @@ searchInput.addEventListener("input", () => {
 });
 
 //
-// 8. Create new playlist on form submit
+// 8. Create a new playlist
 //
 playlistForm.addEventListener("submit", e => {
-  e.preventDefault();                    // don’t reload the page
+  e.preventDefault();
   const name = playlistName.value.trim();
   const desc = playlistDesc.value.trim();
-  if (!name) return;                     // name is required
+  if (!name) return;
 
-  createPlaylist(name, desc);            // save to localStorage
+  createPlaylist(name, desc);
   playlistName.value = "";
   playlistDesc.value = "";
-  renderPlaylists();                     // show the new playlist
+  renderPlaylists();
 });
 
 //
-// 9. Delete playlist when its “×” button is clicked
+// 9. Delete a playlist on remove button click
 //
 playlistList.addEventListener("click", e => {
   if (e.target.matches("button.remove")) {
-    const id = e.target.dataset.id;      // read data-id from HTML
-    deletePlaylist(id);                  // remove from storage
-    renderPlaylists();                   // update UI
+    const id = e.target.dataset.id;
+    deletePlaylist(id);
+    renderPlaylists();
   }
 });
 
 //
-// 10. On page load, show any existing playlists
+// 10. Initial render of playlists on page load
 //
 renderPlaylists();
