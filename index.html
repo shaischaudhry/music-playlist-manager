@@ -23,6 +23,35 @@
       <section id="albums" aria-live="polite">
         Albums will appear here in Phase 2.
       </section>
+        <!-- Phase 4: Playlist Management -->
+  <section id="playlists">
+    <h2>Playlists</h2>
+
+    <!-- 1. Create Playlist Form -->
+    <form id="playlistForm">
+      <!-- Text input for playlist name -->
+      <input
+        id="playlistName"
+        type="text"
+        placeholder="Playlist name"
+        required
+      />
+      <!-- Optional description -->
+      <input
+        id="playlistDesc"
+        type="text"
+        placeholder="Description (optional)"
+      />
+      <!-- Submit button -->
+      <button type="submit">Create</button>
+    </form>
+
+    <!-- 2. Where playlist cards will appear -->
+    <div id="playlistList">
+      <!-- JavaScript will fill this with playlist cards -->
+    </div>
+  </section>
+
     </main>
 
     <!-- type="module" enables ES module imports in app.js -->

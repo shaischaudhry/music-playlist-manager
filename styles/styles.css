@@ -51,3 +51,59 @@ main { padding: 20px; display: grid; gap: var(--gap); }
   background: var(--bg);
   color: var(--fg);
 }
+#playlists {
+  border-top: 1px solid #334155; /* horizontal line above */
+  padding-top: var(--gap);
+  margin-top: var(--gap);
+}
+
+#playlistForm {
+  display: flex;       /* children laid out in a row */
+  gap: var(--gap);     /* space between inputs and button */
+  flex-wrap: wrap;     /* move to next line if it runs out of room */
+}
+
+#playlistForm input {
+  flex: 1;             /* inputs take up equal space */
+  padding: 8px;        /* inner space */
+  border: 1px solid #334155;
+  border-radius: 4px;
+}
+
+#playlistForm button {
+  padding: 8px 16px;
+  background: #2563eb; /* blue button */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;     /* shows hand icon on hover */
+}
+
+#playlistList {
+  margin-top: var(--gap);
+  display: grid;       /* grid layout for cards */
+  gap: var(--gap);     /* space between cards */
+}
+
+.playlist-card {
+  border: 1px solid #334155;
+  padding: var(--gap);
+  border-radius: 4px;
+  position: relative;  /* for positioning the remove button */
+}
+
+.playlist-card h3 {
+  margin: 0 0 4px;
+}
+
+.playlist-card button.remove {
+  /* small “×” button in top-right */
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #f87171;      /* red color */
+  font-size: 1.2em;
+  cursor: pointer;
+}
