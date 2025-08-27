@@ -25,3 +25,21 @@ main { padding: 20px; display: grid; gap: var(--gap); }
   padding: 16px;
   color: var(--muted);
 }
+.album-card {
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: var(--gap);
+  display: grid;
+  gap: 4px;
+  max-width: 200px;
+}
+
+.album-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+
+.error {
+  color: #f87171; /* subtle red */
+}
