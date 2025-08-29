@@ -129,3 +129,38 @@ main { padding: 20px; display: grid; gap: var(--gap); }
   font-size: 1em;
   cursor: pointer;
 }
+
+/* ===== Phase UI-1: Top picks scaffolding ===== */
+.section {
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.02);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.card .thumb {
+  height:110px;
+  border-radius:6px;
+  overflow:hidden;
+  background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.28));
+}
+
+.card h3 { margin:0; font-size:14px; }
+.card p.meta { margin:0; color:var(--muted); font-size:13px; }
