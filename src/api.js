@@ -29,6 +29,29 @@ export async function searchArtistsByName(artistName) {
 }
 
 /**
+ * Fetch popular artists for the top picks section.
+ * @returns {Promise<any[]>} Resolves to an array of popular artist objects.
+ */
+export async function fetchPopularArtists() {
+  // Use some well-known artists as popular picks
+  const popularNames = ["Coldplay", "The Beatles", "Queen", "Michael Jackson", "Madonna"];
+  const artists = [];
+  
+  for (const name of popularNames) {
+    try {
+      const results = await searchArtistsByName(name);
+      if (results.length > 0) {
+        artists.push(results[0]);
+      }
+    } catch (error) {
+      console.warn(`Failed to fetch popular artist: ${name}`, error);
+    }
+  }
+  
+  return artists;
+}
+
+/**
  * Fetch albums for a given artist ID.
  * @param {string} artistId
  * @returns {Promise<any[]>} Resolves to an array of album objects.
