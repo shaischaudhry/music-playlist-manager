@@ -1,6 +1,6 @@
 // src/app.js
 
-import { fetchAlbumsByArtistId } from "./api.js";
+import { fetchAlbumsByArtistId, searchArtistsByName } from "./api.js";
 import { filterAlbums }          from "./utils.js";
 import {
   getAllPlaylists,
@@ -32,7 +32,7 @@ const playlistList     = document.getElementById("playlistList");
 let albumCache = [];
 
 //
-// 3. Render album cards (with “Add to playlist” dropdown)
+// 3. Render album cards (with "Add to playlist" dropdown)
 //
 function renderAlbums(albums) {
   albumsContainer.innerHTML = "";
@@ -141,11 +141,21 @@ artistIdInput.addEventListener("input", () => {
 // 6. Fetch and display albums on button click
 //
 loadBtn.addEventListener("click", async () => {
-  const id = artistIdInput.value.trim();
+  const artistName = artistIdInput.value.trim();
   albumsContainer.innerHTML = "<p>Loading…</p>";
 
   try {
-    const albums = await fetchAlbumsByArtistId(id);
+    // First search for the artist by name
+    const artists = await searchArtistsByName(artistName);
+    
+    if (artists.length === 0) {
+      albumsContainer.innerHTML = "<p class='error'>No artists found with that name.</p>";
+      return;
+    }
+    
+    // Use the first artist found to get albums
+    const firstArtist = artists[0];
+    const albums = await fetchAlbumsByArtistId(firstArtist.idArtist);
     albumCache = albums;
     renderAlbums(albumCache);
     renderPlaylists();  // also re-render playlists to show song lists
