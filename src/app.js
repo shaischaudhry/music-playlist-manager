@@ -16,6 +16,10 @@ const artistIdInput    = document.getElementById("artistId");
 const loadBtn          = document.getElementById("loadAlbumsBtn");
 const searchInput      = document.getElementById("searchQuery");
 const albumsContainer  = document.getElementById("albums");
+// NEW — playlist search elements
+const playlistSearch    = document.getElementById("playlistSearch");
+const playlistSearchBtn = document.getElementById("playlistSearchBtn");
+
 
 const playlistForm     = document.getElementById("playlistForm");
 const playlistName     = document.getElementById("playlistName");
@@ -73,18 +77,25 @@ function renderAlbums(albums) {
   });
 }
 
-//
 // 4. Render playlist cards (now with song lists and remove‐song buttons)
-//
-function renderPlaylists() {
+// Accept an optional filter query (string)
+function renderPlaylists(filterQuery = "") {
   playlistList.innerHTML = "";
 
-  const all = getAllPlaylists();
+  // Read all playlists and optionally filter by name/description
+  let all = getAllPlaylists() || [];
+  const q = (filterQuery || "").trim().toLowerCase();
+  if (q) {
+    all = all.filter(pl =>
+      (pl.name || "").toLowerCase().includes(q) ||
+      (pl.description || "").toLowerCase().includes(q)
+    );
+  }
+
   if (all.length === 0) {
     playlistList.innerHTML = "<p>No playlists yet.</p>";
     return;
   }
-
   all.forEach(pl => {
     const card = document.createElement("div");
     card.className = "playlist-card";
@@ -183,6 +194,30 @@ playlistList.addEventListener("click", e => {
     renderPlaylists();
   }
 });
+
+// NEW — playlist search wiring: live filter + button + Enter key
+if (playlistSearch) {
+  // live filter while typing
+  playlistSearch.addEventListener("input", () => {
+    renderPlaylists(playlistSearch.value);
+  });
+
+  // explicit search button (for accessibility)
+  if (playlistSearchBtn) {
+    playlistSearchBtn.addEventListener("click", () => {
+      renderPlaylists(playlistSearch.value);
+    });
+  }
+
+  // pressing Enter in the input triggers the search button
+  playlistSearch.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (playlistSearchBtn) playlistSearchBtn.click();
+      else renderPlaylists(playlistSearch.value);
+    }
+  });
+}
 
 //
 // 10. Initial render of playlists on page load
