@@ -164,3 +164,39 @@ main { padding: 20px; display: grid; gap: var(--gap); }
 
 .card h3 { margin:0; font-size:14px; }
 .card p.meta { margin:0; color:var(--muted); font-size:13px; }
+
+/* ===== Phase UI-1: playlist-search + color tweaks ===== */
+/* subtle accent tune (keeps harmony with dark theme) */
+:root {
+  --accent: #38bdf8;      /* azure-ish accent for buttons/badges */
+  --playlist-accent: #34d399; /* green for playlist highlights */
+}
+/* Playlist search input/button */
+#playlistSearch {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+  background: transparent;
+  color: var(--fg);
+}
+#playlistSearchBtn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  color: var(--fg);
+}
+/* small visual polish for playlist cards (accent dot) */
+.playlist-card::before {
+  content: "";
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:var(--playlist-accent);
+  margin-right:8px;
+  vertical-align:middle;
+  opacity:0.95;
+}

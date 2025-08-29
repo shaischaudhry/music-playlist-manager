@@ -17,7 +17,7 @@ export async function fetchAlbumsByArtistId(artistId) {
     return cache[artistId];
   }
   const url = `${BASE_URL}/${API_KEY}/album.php?i=${encodeURIComponent(artistId)}`;
-
+  
   
   const response = await fetch(url);
 
