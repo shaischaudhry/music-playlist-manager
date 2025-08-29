@@ -1,6 +1,6 @@
 // src/app.js
 
-import { fetchAlbumsByArtistId } from "./api.js";
+import { fetchAlbumsByArtistId, searchArtistsByName, fetchPopularArtists } from "./api.js";
 import { filterAlbums }          from "./utils.js";
 import {
   getAllPlaylists,
@@ -16,6 +16,7 @@ const artistIdInput    = document.getElementById("artistId");
 const loadBtn          = document.getElementById("loadAlbumsBtn");
 const searchInput      = document.getElementById("searchQuery");
 const albumsContainer  = document.getElementById("albums");
+const artistList       = document.getElementById("artistList");
 // NEW — playlist search elements
 const playlistSearch    = document.getElementById("playlistSearch");
 const playlistSearchBtn = document.getElementById("playlistSearchBtn");
@@ -32,7 +33,66 @@ const playlistList     = document.getElementById("playlistList");
 let albumCache = [];
 
 //
-// 3. Render album cards (with “Add to playlist” dropdown)
+// 3. Load popular artists on page load
+//
+async function loadPopularArtists() {
+  try {
+    const artists = await fetchPopularArtists();
+    renderPopularArtists(artists);
+  } catch (error) {
+    console.error("Error loading popular artists:", error);
+  }
+}
+
+//
+// 4. Render popular artists in top picks section
+//
+function renderPopularArtists(artists) {
+  if (!artistList) return;
+  
+  artistList.innerHTML = "";
+  
+  artists.forEach(artist => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.addEventListener("click", () => selectPopularArtist(artist));
+    
+    card.innerHTML = `
+      <div class="thumb">
+        <span>🎵</span>
+      </div>
+      <h3>${artist.strArtist || 'Unknown Artist'}</h3>
+      <p class="meta">${artist.strGenre || 'Artist'}</p>
+    `;
+    
+    artistList.appendChild(card);
+  });
+}
+
+//
+// 5. Handle popular artist selection
+//
+async function selectPopularArtist(artist) {
+  // Hide top picks section
+  const topPicksSection = document.getElementById("top-picks");
+  if (topPicksSection) {
+    topPicksSection.style.display = "none";
+  }
+  
+  // Load albums for this artist
+  try {
+    const albums = await fetchAlbumsByArtistId(artist.idArtist);
+    albumCache = albums;
+    renderAlbums(albumCache);
+    renderPlaylists();
+  } catch (error) {
+    console.error("Error loading albums for popular artist:", error);
+    albumsContainer.innerHTML = `<p class="error">Error loading albums: ${error.message}</p>`;
+  }
+}
+
+//
+// 3. Render album cards (with "Add to playlist" dropdown)
 //
 function renderAlbums(albums) {
   albumsContainer.innerHTML = "";
@@ -131,21 +191,31 @@ function renderPlaylists(filterQuery = "") {
 }
 
 //
-// 5. Enable/disable Load button based on input
+// 6. Enable/disable Load button based on input
 //
 artistIdInput.addEventListener("input", () => {
   loadBtn.disabled = artistIdInput.value.trim().length === 0;
 });
 
 //
-// 6. Fetch and display albums on button click
+// 7. Fetch and display albums on button click
 //
 loadBtn.addEventListener("click", async () => {
-  const id = artistIdInput.value.trim();
+  const artistName = artistIdInput.value.trim();
   albumsContainer.innerHTML = "<p>Loading…</p>";
 
   try {
-    const albums = await fetchAlbumsByArtistId(id);
+    // First search for the artist by name
+    const artists = await searchArtistsByName(artistName);
+    
+    if (artists.length === 0) {
+      albumsContainer.innerHTML = "<p class='error'>No artists found with that name.</p>";
+      return;
+    }
+    
+    // Use the first artist found to get albums
+    const firstArtist = artists[0];
+    const albums = await fetchAlbumsByArtistId(firstArtist.idArtist);
     albumCache = albums;
     renderAlbums(albumCache);
     renderPlaylists();  // also re-render playlists to show song lists
@@ -156,7 +226,7 @@ loadBtn.addEventListener("click", async () => {
 });
 
 //
-// 7. Filter displayed albums as user types
+// 8. Filter displayed albums as user types
 //
 searchInput.addEventListener("input", () => {
   const filtered = filterAlbums(albumCache, searchInput.value);
@@ -164,7 +234,7 @@ searchInput.addEventListener("input", () => {
 });
 
 //
-// 8. Create a new playlist
+// 9. Create a new playlist
 //
 playlistForm.addEventListener("submit", e => {
   e.preventDefault();
@@ -179,7 +249,7 @@ playlistForm.addEventListener("submit", e => {
 });
 
 //
-// 9. Delete a playlist or a song within a playlist
+// 10. Delete a playlist or a song within a playlist
 //
 playlistList.addEventListener("click", e => {
   if (e.target.matches("button.remove")) {
@@ -220,6 +290,11 @@ if (playlistSearch) {
 }
 
 //
-// 10. Initial render of playlists on page load
+// 11. Initial render of playlists on page load
 //
 renderPlaylists();
+
+//
+// 12. Initial load of popular artists on page load
+//
+loadPopularArtists();

@@ -4,6 +4,54 @@ export const BASE_URL = "https://www.theaudiodb.com/api/v1/json";
 export const API_KEY = "2";
 
 /**
+ * Search for artists by name.
+ * @param {string} artistName
+ * @returns {Promise<any[]>} Resolves to an array of artist objects.
+ */
+export async function searchArtistsByName(artistName) {
+  const url = `${BASE_URL}/${API_KEY}/search.php?s=${encodeURIComponent(artistName)}`;
+  
+  try {
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("[searchArtistsByName] parsed JSON:", data);
+
+    return data.artists || [];
+  } catch (error) {
+    console.error("Error searching artists:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch popular artists for the top picks section.
+ * @returns {Promise<any[]>} Resolves to an array of popular artist objects.
+ */
+export async function fetchPopularArtists() {
+  // Use some well-known artists as popular picks
+  const popularNames = ["Coldplay", "The Beatles", "Queen", "Michael Jackson", "Madonna"];
+  const artists = [];
+  
+  for (const name of popularNames) {
+    try {
+      const results = await searchArtistsByName(name);
+      if (results.length > 0) {
+        artists.push(results[0]);
+      }
+    } catch (error) {
+      console.warn(`Failed to fetch popular artist: ${name}`, error);
+    }
+  }
+  
+  return artists;
+}
+
+/**
  * Fetch albums for a given artist ID.
  * @param {string} artistId
  * @returns {Promise<any[]>} Resolves to an array of album objects.
