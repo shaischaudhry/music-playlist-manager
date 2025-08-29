@@ -12,74 +12,110 @@
     </header>
 
     <main>
-      <section id="controls">
-        <label for="artistId">Artist ID</label>
-        <input id="artistId" type="text" placeholder="e.g., 112024" />
-        <button id="loadAlbumsBtn" disabled>Load Albums</button>
-        <label for="searchQuery">Search Albums</label>
-        <input id="searchQuery" type="text" placeholder="Name, genre, or year" />
+      <!-- Artist Search Section -->
+      <section id="controls" class="section">
+        <h3>Search for Artists</h3>
+        <div class="search-controls">
+          <label for="artistSearch">Artist Name</label>
+          <input 
+            id="artistSearch" 
+            type="text" 
+            placeholder="e.g., Coldplay, The Beatles, Taylor Swift" 
+            autocomplete="off"
+          />
+          <button id="searchArtistBtn">Search Artist</button>
+        </div>
       </section>
 
+      <!-- Top Picks Section -->
       <section id="top-picks" class="section">
-        <h3 style="margin:0 0 8px 0">Top picks</h3>
+        <h3>Top Picks</h3>
         <div id="artistList" class="grid">
+          <!-- Popular artists will be loaded here -->
+        </div>
+      </section>
+
+      <!-- Albums Section -->
+      <section id="albums-section" class="section" style="display: none;">
+        <div class="section-header">
+          <h3 id="albums-title">Albums</h3>
+          <div class="album-controls">
+            <input 
+              id="albumSearch" 
+              type="text" 
+              placeholder="Search albums..." 
+              class="album-search-input"
+            />
+            <button id="viewTracksBtn" class="secondary-btn">View Tracks</button>
           </div>
+        </div>
+        <div id="albums" class="grid">
+          <!-- Albums will appear here -->
+        </div>
       </section>
 
-      <section id="albums" aria-live="polite">
-        Albums will appear here in Phase 2.
+      <!-- Tracks Section -->
+      <section id="tracks-section" class="section" style="display: none;">
+        <div class="section-header">
+          <h3 id="tracks-title">Tracks</h3>
+          <div class="track-controls">
+            <input 
+              id="trackSearch" 
+              type="text" 
+              placeholder="Search tracks..." 
+              class="track-search-input"
+            />
+          </div>
+        </div>
+        <div id="tracks" class="grid">
+          <!-- Individual tracks will appear here -->
+        </div>
       </section>
-        <!-- Phase 4: Playlist Management -->
-  <section id="playlists">
-    <h2>Playlists</h2>
-    
-   <div id="playlistSearchContainer" class="playlist-search" role="search" aria-label="Search playlists">
-  <label for="playlistSearch" class="sr-only">Search playlists</label>
-  <div class="ps-input-wrap">
-    <input
-      id="playlistSearch"
-      class="search-input"
-      type="search"
-      placeholder="Find playlist by name or description"
-      aria-label="Search playlists"
-    />
-    <button id="playlistSearchBtn" class="search-button" aria-label="Search playlists">
-      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path fill="currentColor" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>
-      </svg>
-    </button>
-  </div>
-</div>
 
+      <!-- Playlists Section -->
+      <section id="playlists" class="section">
+        <h3>Playlists</h3>
+        
+        <!-- Playlist Search -->
+        <div id="playlistSearchContainer" class="playlist-search" role="search" aria-label="Search playlists">
+          <label for="playlistSearch" class="sr-only">Search playlists</label>
+          <div class="ps-input-wrap">
+            <input
+              id="playlistSearch"
+              class="search-input"
+              type="search"
+              placeholder="Find playlist by name or description"
+              aria-label="Search playlists"
+            />
+            <button id="playlistSearchBtn" class="search-button" aria-label="Search playlists">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
 
-  </div>
-</div>
-    <form id="playlistForm">
-    <!-- 1. Create Playlist Form -->
-    <form id="playlistForm">
-      <!-- Text input for playlist name -->
-      <input
-        id="playlistName"
-        type="text"
-        placeholder="Playlist name"
-        required
-      />
-      <!-- Optional description -->
-      <input
-        id="playlistDesc"
-        type="text"
-        placeholder="Description (optional)"
-      />
-      <!-- Submit button -->
-      <button type="submit">Create</button>
-    </form>
+        <!-- Create Playlist Form -->
+        <form id="playlistForm">
+          <input
+            id="playlistName"
+            type="text"
+            placeholder="Playlist name"
+            required
+          />
+          <input
+            id="playlistDesc"
+            type="text"
+            placeholder="Description (optional)"
+          />
+          <button type="submit">Create Playlist</button>
+        </form>
 
-    <!-- 2. Where playlist cards will appear -->
-    <div id="playlistList">
-      <!-- JavaScript will fill this with playlist cards -->
-    </div>
-  </section>
-
+        <!-- Playlist List -->
+        <div id="playlistList">
+          <!-- JavaScript will fill this with playlist cards -->
+        </div>
+      </section>
     </main>
 
     <!-- type="module" enables ES module imports in app.js -->

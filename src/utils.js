@@ -14,15 +14,38 @@ export function filterAlbums(albums, query) {
   }
 
   return albums.filter(album => {
-    const name  = (album.strAlbum         || "").toLowerCase();
-    const genre = (album.strGenre         || "").toLowerCase();
-    const year  = String(album.intYearReleased || "").toLowerCase();
+    const name  = (album.title         || "").toLowerCase();
+    const date  = String(album.date    || "").toLowerCase();
+    const country = String(album.country || "").toLowerCase();
 
     // True if any field includes the query substring
     return (
       name.includes(q) ||
-      genre.includes(q) ||
-      year.includes(q)
+      date.includes(q) ||
+      country.includes(q)
     );
+  });
+}
+
+/**
+ * Filters tracks by matching title.
+ * @param {Array} tracks
+ * @param {string} query
+ * @returns {Array} filtered tracks
+ */
+export function filterTracks(tracks, query) {
+  const q = query.trim().toLowerCase();
+  console.log("[filterTracks] query:", q);
+
+  if (!q) {
+    // No search text → show everything
+    return tracks;
+  }
+
+  return tracks.filter(track => {
+    const title = (track.title || "").toLowerCase();
+    
+    // True if title includes the query substring
+    return title.includes(q);
   });
 }
