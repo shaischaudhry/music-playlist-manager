@@ -130,3 +130,21 @@ export async function fetchAlbumsByArtistId(artistId) {
 
   return albums;
 }
+
+/**
+ * Fetch tracks for a given album ID from TheAudioDB.
+ * @param {string} albumId - TheAudioDB album ID.
+ * @returns {Promise<any[]>} Resolves to an array of track objects.
+ */
+export async function fetchTracksByAlbumId(albumId) {
+  const url = `${TADB_BASE_URL}/${TADB_API_KEY}/track.php?m=${encodeURIComponent(albumId)}`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`TheAudioDB error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  // TheAudioDB returns an array of tracks, or null if not found
+  return Array.isArray(data.track) ? data.track : [];
+}
