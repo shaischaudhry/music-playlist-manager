@@ -1,7 +1,20 @@
-// src/api.js
+// --- TheAudioDB constants ---
+export const TADB_BASE_URL = "https://www.theaudiodb.com/api/v1/json";
+export const TADB_API_KEY = "2";
 
-export const BASE_URL = "https://www.theaudiodb.com/api/v1/json";
-export const API_KEY = "2";
+// --- MusicBrainz constants ---
+export const MB_BASE_URL = "https://musicbrainz.org/ws/2";
+export const MB_USER_AGENT = "music-playlist-manager/1.0 (dev@yourdomain.com)";
+
+// MusicBrainz limit is 1 request per second
+// Ensure we do not exceed this rate
+let lastMBRequestTime = 0;
+async function throttleMusicBrainz() {
+  const now = Date.now();
+  const wait = Math.max(0, 1100 - (now - lastMBRequestTime));
+  if (wait > 0) await new Promise(res => setTimeout(res, wait));
+  lastMBRequestTime = Date.now();
+}
 
 /**
  * Search for artists by name.
