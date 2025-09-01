@@ -44,25 +44,24 @@ export async function getArtistByName_TheAudioDB(name) {
   if (!response.ok) throw new Error(`TheAudioDB error: ${response.status}`);
   const data = await response.json();
   // TheAudioDB returns an array of artists, or null if not found
-  return data.artists ? data.artists[0] : null;
+  return data.artists || null;
 }
 
 
 /**
- * Fetch albums for a given artist ID.
+ * Fetch albums for a given artist name
  * @param {string} artistId
  * @returns {Promise<any[]>} Resolves to an array of album objects.
  */
 
 const cache = {}
-export async function fetchAlbumsByArtistId(artistId) {
+export async function fetchAlbumsByArtistName(artistName) {
   
-  if (artistId in cache) {
+  if (artistName in cache) {
     console.log(`[cache] hit for ID=${artistId} (length=${cache[artistId].length})`);
-    return cache[artistId];
+    return cache[artistName];
   }
-  const url = `${TADB_BASE_URL}/${TADB_API_KEY}/album.php?i=${encodeURIComponent(artistId)}`;
-  
+  const url = `${TADB_BASE_URL}/${TADB_API_KEY}/searchalbum.php?s=${encodeURIComponent(artistName)}`;
   const response = await fetch(url);
 
   
@@ -77,7 +76,7 @@ export async function fetchAlbumsByArtistId(artistId) {
   const albums = Array.isArray(data.album) ? data.album : [];
 
   // 7. Cache the result (even if empty) and return it
-  cache[artistId] = albums;
+  cache[artistName] = albums;
   console.log(`[cache] saved ${albums.length} item(s) for ID=${artistId}`);
 
   return albums;
@@ -99,22 +98,4 @@ export async function fetchTracksByAlbumId(albumId) {
   const data = await response.json();
   // TheAudioDB returns an array of tracks, or null if not found
   return Array.isArray(data.track) ? data.track : [];
-}
-
-/**
- * Global search: runs 3 parallel TheAudioDB calls (artist, album, track).
- * @param {string} query - The search string.
- * @returns {Promise<{artists: any[], albums: any[], tracks: any[]}>}
- */
-export async function searchAllTheAudioDB(query) {
-  const [artistRes, albumRes, trackRes] = await Promise.all([
-    fetch(`${TADB_BASE_URL}/${TADB_API_KEY}/search.php?s=${encodeURIComponent(query)}`).then(r => r.json()),
-    fetch(`${TADB_BASE_URL}/${TADB_API_KEY}/searchalbum.php?a=${encodeURIComponent(query)}`).then(r => r.json()),
-    fetch(`${TADB_BASE_URL}/${TADB_API_KEY}/searchtrack.php?t=${encodeURIComponent(query)}`).then(r => r.json())
-  ]);
-  return {
-    artists: artistRes.artists || [],
-    albums: albumRes.album || [],
-    tracks: trackRes.track || []
-  };
 }
