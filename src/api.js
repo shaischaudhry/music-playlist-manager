@@ -17,6 +17,38 @@ async function throttleMusicBrainz() {
 }
 
 /**
+ * Fetch artists by genre from MusicBrainz.
+ * @param {string} genre - e.g. "rock"
+ * @param {number} limit - number of artists to fetch
+ * @returns {Promise<any[]>} Resolves to an array of artist objects.
+ */
+export async function getHomeArtistsMusicBrainz(genre = "rock", limit = 15) {
+  await throttleMusicBrainz(); // Wait if needed to respect rate limit
+  const url = `${MB_BASE_URL}/artist?query=tag:${encodeURIComponent(genre)}&fmt=json&limit=${limit}`;
+  const response = await fetch(url, {
+    headers: { "User-Agent": MB_USER_AGENT }
+  });
+  if (!response.ok) throw new Error(`MusicBrainz error: ${response.status}`);
+  const data = await response.json();
+  return data.artists || [];
+}
+
+/**
+ * Find TheAudioDB artist by name.
+ * @param {string} name - The artist name to search for.
+ * @returns {Promise<any|null>} Resolves to the artist object or null if not found.
+ */
+export async function getArtistByName_TheAudioDB(name) {
+  const url = `${TADB_BASE_URL}/${TADB_API_KEY}/search.php?s=${encodeURIComponent(name)}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`TheAudioDB error: ${response.status}`);
+  const data = await response.json();
+  // TheAudioDB returns an array of artists, or null if not found
+  return data.artists ? data.artists[0] : null;
+}
+
+
+/**
  * Search for artists by name.
  * @param {string} artistName
  * @returns {Promise<any[]>} Resolves to an array of artist objects.
