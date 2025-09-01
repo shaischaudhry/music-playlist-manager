@@ -109,15 +109,14 @@ export async function fetchAlbumsByArtistId(artistId) {
     console.log(`[cache] hit for ID=${artistId} (length=${cache[artistId].length})`);
     return cache[artistId];
   }
-  const url = `${BASE_URL}/${API_KEY}/album.php?i=${encodeURIComponent(artistId)}`;
-  
+  const url = `${TADB_BASE_URL}/${TADB_API_KEY}/album.php?i=${encodeURIComponent(artistId)}`;
   
   const response = await fetch(url);
 
   
   if (!response.ok) {
     // if for instance artistId invalid or server error (e.g., 404, 500)
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    throw new Error(`TheAudioDB error: ${response.status}`);
   }
 
   const data = await response.json();
