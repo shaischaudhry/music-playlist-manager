@@ -148,3 +148,21 @@ export async function fetchTracksByAlbumId(albumId) {
   // TheAudioDB returns an array of tracks, or null if not found
   return Array.isArray(data.track) ? data.track : [];
 }
+
+/**
+ * Global search: runs 3 parallel TheAudioDB calls (artist, album, track).
+ * @param {string} query - The search string.
+ * @returns {Promise<{artists: any[], albums: any[], tracks: any[]}>}
+ */
+export async function searchAllTheAudioDB(query) {
+  const [artistRes, albumRes, trackRes] = await Promise.all([
+    fetch(`${TADB_BASE_URL}/${TADB_API_KEY}/search.php?s=${encodeURIComponent(query)}`).then(r => r.json()),
+    fetch(`${TADB_BASE_URL}/${TADB_API_KEY}/searchalbum.php?a=${encodeURIComponent(query)}`).then(r => r.json()),
+    fetch(`${TADB_BASE_URL}/${TADB_API_KEY}/searchtrack.php?t=${encodeURIComponent(query)}`).then(r => r.json())
+  ]);
+  return {
+    artists: artistRes.artists || [],
+    albums: albumRes.album || [],
+    tracks: trackRes.track || []
+  };
+}
