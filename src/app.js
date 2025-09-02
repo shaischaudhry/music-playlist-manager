@@ -274,7 +274,12 @@ function addTrackToPlaylist(trackId) {
 function removeTrackFromPlaylist(trackId) {
   const playlists = getAllPlaylists();
   for (const playlist of playlists) {
-    if (playlist.songs.includes(trackId)) {
+    // Check for both formats in the playlist's songs array
+    const hasTrack = playlist.songs.some(song => 
+      song === trackId || (typeof song === 'object' && song.id === trackId)
+    );
+    
+    if (hasTrack) {
       toggleSongInPlaylist(playlist.id, trackId);
       break;
     }
@@ -297,7 +302,11 @@ function formatDuration(milliseconds) {
 function isTrackInPlaylist(trackId) {
   const playlists = getAllPlaylists();
   return playlists.some(playlist => 
-    playlist.songs.includes(trackId)
+    playlist.songs.some(song => 
+      // Check if the song is either a direct ID match (old format)
+      // or an object with a matching ID property (new format)
+      song === trackId || (typeof song === 'object' && song.id === trackId)
+    )
   );
 }
 
