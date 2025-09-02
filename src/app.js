@@ -83,7 +83,7 @@ async function selectPopularArtist(artist) {
   }
   
     // Hide albums section initially while loading
-    albumsContainer.style.display = "none";
+    albumsContainer.style.visibility = "hidden";
     toggleSearchAlbumsSection(false);
     
   // Load albums for this artist
@@ -110,7 +110,7 @@ const albums = await fetchAlbumsByArtistName(tadbArtist[0].strArtist);
 function renderAlbums(albums) {
   
   // Show albums section and search albums section
-  albumsContainer.style.display = "block";
+  albumsContainer.style.visibility = "visible";
   toggleSearchAlbumsSection(true);
 
   albumsContainer.innerHTML = "";
@@ -232,7 +232,7 @@ function resetToHomepage() {
   }
   
   // Hide albums section
-  albumsContainer.style.display = "none";
+  albumsContainer.style.visibility = "hidden";
   
   // Hide search albums section
   toggleSearchAlbumsSection(false);
@@ -319,7 +319,7 @@ loadBtn.addEventListener("click", async () => {
   }
   
   // Hide albums section initially while loading
-  albumsContainer.style.display = "none";
+  albumsContainer.style.visibility = "hidden";
   toggleSearchAlbumsSection(false);
   
   albumsContainer.innerHTML = "<p>Loading…</p>";
