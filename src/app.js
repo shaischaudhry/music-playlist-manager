@@ -30,6 +30,13 @@ const playlistName     = document.getElementById("playlistName");
 const playlistDesc     = document.getElementById("playlistDesc");
 const playlistList     = document.getElementById("playlistList");
 
+// Grab modal elements
+const createPlaylistModal = document.getElementById("createPlaylistModal");
+const modalPlaylistForm = document.getElementById("modalPlaylistForm");
+const modalPlaylistName = document.getElementById("modalPlaylistName");
+const modalPlaylistDesc = document.getElementById("modalPlaylistDesc");
+const cancelCreatePlaylist = document.getElementById("cancelCreatePlaylist");
+
 //
 // 2. In-memory cache for fetched albums
 //
@@ -223,8 +230,8 @@ function addTrackToPlaylist(trackId) {
   
   if (playlists.length === 0) {
     // Create a default playlist if none exist
-    const playlistId = createPlaylist("My Playlist", "Default playlist for tracks");
-    toggleSongInPlaylist(playlistId, trackId);
+    const newPlaylist = createPlaylist("My Playlist", "Default playlist for tracks");
+    toggleSongInPlaylist(newPlaylist.id, trackId);
   } else {
     // Show playlist selection (you can enhance this later)
     const firstPlaylist = playlists[0];
@@ -273,30 +280,69 @@ function toggleSearchAlbumsSection(show) {
     searchAlbumsSection.style.display = show ? "flex" : "none";
   }
 }
-//
-// 11.. Playlist creation modal system
-//
-function showCreatePlaylistModal() {
-  const playlistName = prompt("Enter playlist name:");
-  if (!playlistName || playlistName.trim() === "") return;
-  
-  const playlistDesc = prompt("Enter playlist description (optional):");
-  const desc = playlistDesc ? playlistDesc.trim() : "";
-  
-  const playlistId = createPlaylist(playlistName.trim(), desc);
-  renderPlaylists();
-  
-  // Show success message
-  alert(`Playlist "${playlistName}" created successfully!`);
-}
 
-// Add event listener for create playlist button
+// Show modal when "Create Playlist" button is clicked
 document.addEventListener('DOMContentLoaded', () => {
   const createPlaylistBtn = document.getElementById('createPlaylistBtn');
   if (createPlaylistBtn) {
-    createPlaylistBtn.addEventListener('click', showCreatePlaylistModal);
+    createPlaylistBtn.addEventListener('click', () => {
+      createPlaylistModal.style.display = "flex";
+      modalPlaylistName.value = "";
+      modalPlaylistDesc.value = "";
+      modalPlaylistName.focus();
+    });
   }
 });
+
+// Handle modal form submission
+if (modalPlaylistForm) {
+  modalPlaylistForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const name = modalPlaylistName.value.trim();
+    const desc = modalPlaylistDesc.value.trim();
+    if (!name) return;
+
+     // Prevent duplicate playlist names (case-insensitive)
+    const allPlaylists = getAllPlaylists() || [];
+    if (allPlaylists.some(pl => (pl.name || "").toLowerCase() === name.toLowerCase())) {
+      alert("A playlist with this name already exists.");
+      return;
+    }
+    
+    createPlaylist(name, desc);
+    renderPlaylists(); // Read all playlists and optionally filter by name/description
+  let all = getAllPlaylists() || [];
+  const q = (filterQuery || "").trim().toLowerCase();
+  if (q) {
+    all = all.filter(pl =>
+      (pl.name || "").toLowerCase().includes(q) ||
+      (pl.description || "").toLowerCase().includes(q)
+    );
+  }
+  
+  if (all.length === 0) {
+    playlistList.innerHTML = "<p>No playlists yet.</p>";
+    return;
+  }
+    createPlaylistModal.style.display = "none";
+  });
+}
+
+// Handle cancel button
+if (cancelCreatePlaylist) {
+  cancelCreatePlaylist.addEventListener("click", () => {
+    createPlaylistModal.style.display = "none";
+  });
+}
+
+// Optional: Close modal when clicking outside modal content
+if (createPlaylistModal) {
+  createPlaylistModal.addEventListener("click", (e) => {
+    if (e.target === createPlaylistModal) {
+      createPlaylistModal.style.display = "none";
+    }
+  });
+}
 
 //
 // 12.. Reset to homepage state
@@ -329,8 +375,17 @@ function resetToHomepage() {
 function renderPlaylists(filterQuery = "") {
   playlistList.innerHTML = "";
 
-  // Read all playlists and optionally filter by name/description
-  let all = getAllPlaylists() || [];
+  // Get all playlists BEFORE filtering
+  const allPlaylists = getAllPlaylists() || [];
+
+  // Show/hide playlist search bar based on whether there are any playlists at all
+  const playlistSearchContainer = document.getElementById("playlistSearchContainer");
+  if (playlistSearchContainer) {
+    playlistSearchContainer.style.display = allPlaylists.length === 0 ? "none" : "";
+  }
+
+  // Now filter for display
+  let all = allPlaylists;
   const q = (filterQuery || "").trim().toLowerCase();
   if (q) {
     all = all.filter(pl =>
@@ -338,13 +393,7 @@ function renderPlaylists(filterQuery = "") {
       (pl.description || "").toLowerCase().includes(q)
     );
   }
-  
-  // Show/hide playlist search bar based on whether there are any playlists
-  const playlistSearchContainer = document.getElementById("playlistSearchContainer");
-  if (playlistSearchContainer) {
-    playlistSearchContainer.style.display = all.length === 0 ? "none" : "";
-  }
-  
+
   if (all.length === 0) {
     playlistList.innerHTML = "<p>No playlists yet.</p>";
     return;
