@@ -176,7 +176,7 @@ function renderTracks(tracks) {
   albumsContainer.style.visibility = "hidden";
   tracksSection.style.display = "block";
   tracksSection.style.marginTop = "0";
-  tracksSection.style.order = "-1"; // Move to top
+  tracksSection.style.order = "-0.1"; // Move to top
 
 
   tracksContainer.innerHTML = "";
@@ -302,32 +302,27 @@ if (modalPlaylistForm) {
     const desc = modalPlaylistDesc.value.trim();
     if (!name) return;
 
-     // Prevent duplicate playlist names (case-insensitive)
+    // Prevent duplicate playlist names (case-insensitive)
     const allPlaylists = getAllPlaylists() || [];
     if (allPlaylists.some(pl => (pl.name || "").toLowerCase() === name.toLowerCase())) {
       alert("A playlist with this name already exists.");
       return;
     }
     
+    // Create the playlist
     createPlaylist(name, desc);
-    renderPlaylists(); // Read all playlists and optionally filter by name/description
-  let all = getAllPlaylists() || [];
-  const q = (filterQuery || "").trim().toLowerCase();
-  if (q) {
-    all = all.filter(pl =>
-      (pl.name || "").toLowerCase().includes(q) ||
-      (pl.description || "").toLowerCase().includes(q)
-    );
-  }
-  
-  if (all.length === 0) {
-    playlistList.innerHTML = "<p>No playlists yet.</p>";
-    return;
-  }
+    
+    // Clear the form
+    modalPlaylistName.value = "";
+    modalPlaylistDesc.value = "";
+    
+    // Close the modal
     createPlaylistModal.style.display = "none";
+    
+    // Re-render playlists to show the new one
+    renderPlaylists();
   });
 }
-
 // Handle cancel button
 if (cancelCreatePlaylist) {
   cancelCreatePlaylist.addEventListener("click", () => {
