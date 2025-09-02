@@ -136,21 +136,8 @@ function renderAlbums(albums) {
       <h3>${album.strAlbum || 'Unknown Title'}</h3>
       <p>${album.intYearReleased || 'Year N/A'}</p>
       <p>${album.strGenre || 'Genre N/A'}</p>
-      <select class="playlist-select" data-album-id="${album.idAlbum}">
-        <option value="">+ Add to playlist…</option>
-        ${playlists.map(pl => `<option value="${pl.id}">${pl.name}</option>`).join("")}
-      </select>
     `;
 
-    const select = card.querySelector(".playlist-select");
-    select.addEventListener("change", e => {
-      const playlistId = e.target.value;
-      if (!playlistId) return;
-
-      toggleSongInPlaylist(playlistId, album.idAlbum);
-      renderPlaylists();
-      e.target.value = "";
-    });
 
     albumsContainer.appendChild(card);
   });
@@ -179,18 +166,38 @@ function renderTracks(tracks) {
   
   if (!tracksContainer) return;
   
+  albumsContainer.style.visibility = "hidden";
   tracksSection.style.display = "block";
   tracksContainer.innerHTML = "";
   
-  tracks.forEach(track => {
+  tracks.forEach(track, trackIndesx => {
     const trackElement = document.createElement("div");
     trackElement.className = "track-card";
     trackElement.innerHTML = `
       <h4>${track.strTrack || 'Unknown Track'}</h4>
-      <p>Duration: ${track.intDuration ? Math.floor(track.intDuration / 1000) + 's' : 'Unknown'}</p>
-      <button onclick="addTrackToPlaylist('${track.idTrack}')">+ Add to Playlist</button>
+            <p>Duration: ${track.intDuration ? formatDuration(track.intDuration) : 'Unknown'}</p>
+            <button class="add-track-btn" data-track-id="${track.idTrack}">+ Add to Playlist</button>
     `;
     tracksContainer.appendChild(trackElement);
+
+    // Add event listener for the track button
+    const addButton = trackElement.querySelector('.add-track-btn');
+    addButton.addEventListener('click', () => {
+      addTrackToPlaylist(track.idTrack);
+    });
+
+
+    // Add back button to return to albums (only for first track)
+    if (trackIndex === 0) {
+      const backButton = document.createElement("button");
+      backButton.className = "back-to-albums-btn";
+      backButton.textContent = "← Back to Albums";
+      backButton.addEventListener('click', () => {
+        tracksSection.style.display = "none";
+        albumsContainer.style.visibility = "visible";
+      });
+      tracksContainer.insertBefore(backButton, tracksContainer.firstChild);
+    }
   });
 }
 
@@ -214,6 +221,16 @@ function addTrackToPlaylist(trackId) {
   // Re-render playlists to show updated state
   renderPlaylists();
 }
+//
+// 9. Format duration from milliseconds to MM:SS
+//
+function formatDuration(milliseconds) {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
 function toggleSearchAlbumsSection(show) {
   const searchAlbumsSection = document.getElementById("searchAlbumsSection");
   if (searchAlbumsSection) {
