@@ -16,8 +16,10 @@
         <label for="artistId">Artist Name</label>
         <input id="artistId" type="text" placeholder="e.g., Coldplay, The Beatles" />
         <button id="loadAlbumsBtn" disabled>Load Albums</button>
-        <label for="searchQuery">Search Albums</label>
-        <input id="searchQuery" type="text" placeholder="Name, genre, or year" />
+        <div id="searchAlbumsSection" style="display: none;">
+          <label for="searchQuery">Search Albums</label>
+          <input id="searchQuery" type="text" placeholder="Name, genre, or year" />
+        </div>
       </section>
 
       <section id="top-picks" class="section">
@@ -26,8 +28,8 @@
           </div>
       </section>
 
-      <section id="albums" aria-live="polite">
-        Albums
+      <section id="albums" aria-live="polite" style="display: none;">
+        <!-- Albums will be loaded here -->
       </section>
 
       <section id="tracks-section" style="display: none;">
