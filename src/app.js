@@ -228,14 +228,33 @@ function addTrackToPlaylist(trackId) {
   // Get all playlists
   const playlists = getAllPlaylists();
   
+  // First find the track object to get its name
+  let trackName = trackId; // Default if not found
+  
+  // Find the track in all displayed tracks (currently being viewed)
+  const trackElements = document.querySelectorAll('.track-card');
+  trackElements.forEach(element => {
+    const button = element.querySelector('.track-playlist-btn');
+    if (button && button.dataset.trackId === trackId) {
+      const heading = element.querySelector('h4');
+      if (heading) trackName = heading.textContent;
+    }
+  });
+  
+  // Store the track ID and name together
+  const trackInfo = {
+    id: trackId,
+    name: trackName
+  };
+  
   if (playlists.length === 0) {
     // Create a default playlist if none exist
     const newPlaylist = createPlaylist("My Playlist", "Default playlist for tracks");
-    toggleSongInPlaylist(newPlaylist.id, trackId);
+    toggleSongInPlaylist(newPlaylist.id, trackInfo);
   } else {
     // Show playlist selection (you can enhance this later)
     const firstPlaylist = playlists[0];
-    toggleSongInPlaylist(firstPlaylist.id, trackId);
+    toggleSongInPlaylist(firstPlaylist.id, trackInfo);
   }
   
   // Re-render playlists to show updated state
@@ -408,19 +427,21 @@ function renderPlaylists(filterQuery = "") {
     const songsList = document.createElement("ul");
     songsList.className = "playlist-songs";
 
-    pl.songs.forEach(songId => {
-      const li = document.createElement("li");
-      const album = albumCache.find(a => a.idAlbum === songId);
-      const title = album ? album.strAlbum : songId;
-      li.innerHTML = `
-        <span>${title}</span>
-        <button class="remove-song"
-                data-playlist-id="${pl.id}"
-                data-album-id="${songId}"
-        >&times;</button>
-      `;
-      songsList.appendChild(li);
-    });
+      pl.songs.forEach(song => {
+    const li = document.createElement("li");
+    // Handle both new format (objects) and old format (just IDs)
+    const songId = typeof song === 'object' ? song.id : song;
+    const title = typeof song === 'object' ? song.name : songId;
+    
+    li.innerHTML = `
+      <span>${title}</span>
+      <button class="remove-song"
+              data-playlist-id="${pl.id}"
+              data-album-id="${songId}"
+      >&times;</button>
+    `;
+    songsList.appendChild(li);
+  });
 
     card.appendChild(songsList);
     playlistList.appendChild(card);
