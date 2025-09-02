@@ -201,6 +201,22 @@ main { padding: 20px; display: grid; gap: var(--gap); }
   background: var(--bg);
   color: var(--fg);
 }
+/* Back to albums button */
+.back-to-albums-btn {
+  background: #64748b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 16px;
+  transition: background-color 0.2s ease;
+}
+
+.back-to-albums-btn:hover {
+  background: #475569;
+}
 #playlists {
   border-top: 1px solid #334155; /* horizontal line above */
   padding-top: var(--gap);
