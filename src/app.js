@@ -155,9 +155,18 @@ function renderAlbums(albums) {
 //
 async function selectAlbum(album) {
   try {
+    // Show loading state
+    const tracksSection = document.getElementById("tracks-section");
+    if (tracksSection) {
+      tracksSection.style.display = "block";
+      document.getElementById("tracks-container").innerHTML = "<p>Loading tracks...</p>";
+    }
+    
     const tracks = await fetchTracksByAlbumId(album.idAlbum);
-    // Show tracks in UI (you'll need to create this)
     renderTracks(tracks);
+    
+    // Scroll to the tracks section
+    tracksSection.scrollIntoView({ behavior: 'smooth' });
   } catch (error) {
     console.error("Error loading tracks:", error);
     alert("Error loading tracks for this album.");
@@ -173,11 +182,9 @@ function renderTracks(tracks) {
   
   if (!tracksContainer) return;
   
-  albumsContainer.style.visibility = "hidden";
+  // Hide albums and show tracks in the same position
+  albumsContainer.style.display = "none"; // Change visibility:hidden to display:none
   tracksSection.style.display = "block";
-  tracksSection.style.marginTop = "0";
-  tracksSection.style.order = "-0.1"; // Move to top
-
 
   tracksContainer.innerHTML = "";
   
@@ -209,12 +216,13 @@ function renderTracks(tracks) {
 
     // Add back button to return to albums (only for first track)
     if (trackIndex === 0) {
+          // Update the back button handler to properly toggle display
       const backButton = document.createElement("button");
       backButton.className = "back-to-albums-btn";
       backButton.textContent = "← Back to Albums";
       backButton.addEventListener('click', () => {
         tracksSection.style.display = "none";
-        albumsContainer.style.visibility = "visible";
+        albumsContainer.style.display = "grid"; // Change from visibility:visible to display:grid
       });
       tracksContainer.insertBefore(backButton, tracksContainer.firstChild);
     }
