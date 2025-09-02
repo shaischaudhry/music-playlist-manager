@@ -338,7 +338,13 @@ function renderPlaylists(filterQuery = "") {
       (pl.description || "").toLowerCase().includes(q)
     );
   }
-
+  
+  // Show/hide playlist search bar based on whether there are any playlists
+  const playlistSearchContainer = document.getElementById("playlistSearchContainer");
+  if (playlistSearchContainer) {
+    playlistSearchContainer.style.display = all.length === 0 ? "none" : "";
+  }
+  
   if (all.length === 0) {
     playlistList.innerHTML = "<p>No playlists yet.</p>";
     return;
