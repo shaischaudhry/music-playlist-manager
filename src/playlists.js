@@ -85,22 +85,29 @@ export function deletePlaylist(id) {
  * If songId already in playlist.songs → remove it.
  * Otherwise → add it.
  */
-export function toggleSongInPlaylist(playlistId, songId) {
-  const list = getAllPlaylists();
-  const pl   = list.find(p => p.id === playlistId);
-  if (!pl) {
-    // No playlist found for that ID → do nothing
-    return;
-  }
-
-  const idx = pl.songs.indexOf(songId);
-  if (idx === -1) {
-    // songId not in list → add it
-    pl.songs.push(songId);
+export function toggleSongInPlaylist(playlistId, trackInfo) {
+  const allPlaylists = getAllPlaylists();
+  
+  // Find the target playlist
+  const targetPlaylist = allPlaylists.find(p => p.id === playlistId);
+  if (!targetPlaylist) return;
+  
+  // Get the track ID (whether it's an object or just ID)
+  const trackId = typeof trackInfo === 'object' ? trackInfo.id : trackInfo;
+  
+  // Check if this track is already in the playlist
+  const songIndex = targetPlaylist.songs.findIndex(song => 
+    (typeof song === 'object' ? song.id : song) === trackId
+  );
+  
+  if (songIndex >= 0) {
+    // Remove the song
+    targetPlaylist.songs.splice(songIndex, 1);
   } else {
-    // songId already there → remove it
-    pl.songs.splice(idx, 1);
+    // Add the song (as object if provided, otherwise just ID)
+    targetPlaylist.songs.push(trackInfo);
   }
-
-  saveAllPlaylists(list);
+  
+  // Save changes
+  saveAllPlaylists(allPlaylists);
 }

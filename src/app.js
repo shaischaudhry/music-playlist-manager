@@ -155,9 +155,18 @@ function renderAlbums(albums) {
 //
 async function selectAlbum(album) {
   try {
+    // Show loading state
+    const tracksSection = document.getElementById("tracks-section");
+    if (tracksSection) {
+      tracksSection.style.display = "block";
+      document.getElementById("tracks-container").innerHTML = "<p>Loading tracks...</p>";
+    }
+    
     const tracks = await fetchTracksByAlbumId(album.idAlbum);
-    // Show tracks in UI (you'll need to create this)
     renderTracks(tracks);
+    
+    // Scroll to the tracks section
+    tracksSection.scrollIntoView({ behavior: 'smooth' });
   } catch (error) {
     console.error("Error loading tracks:", error);
     alert("Error loading tracks for this album.");
@@ -173,11 +182,9 @@ function renderTracks(tracks) {
   
   if (!tracksContainer) return;
   
-  albumsContainer.style.visibility = "hidden";
+  // Hide albums and show tracks in the same position
+  albumsContainer.style.display = "none"; // Change visibility:hidden to display:none
   tracksSection.style.display = "block";
-  tracksSection.style.marginTop = "0";
-  tracksSection.style.order = "-1"; // Move to top
-
 
   tracksContainer.innerHTML = "";
   
@@ -209,12 +216,13 @@ function renderTracks(tracks) {
 
     // Add back button to return to albums (only for first track)
     if (trackIndex === 0) {
+          // Update the back button handler to properly toggle display
       const backButton = document.createElement("button");
       backButton.className = "back-to-albums-btn";
       backButton.textContent = "← Back to Albums";
       backButton.addEventListener('click', () => {
         tracksSection.style.display = "none";
-        albumsContainer.style.visibility = "visible";
+        albumsContainer.style.display = "grid"; // Change from visibility:visible to display:grid
       });
       tracksContainer.insertBefore(backButton, tracksContainer.firstChild);
     }
@@ -228,14 +236,33 @@ function addTrackToPlaylist(trackId) {
   // Get all playlists
   const playlists = getAllPlaylists();
   
+  // First find the track object to get its name
+  let trackName = trackId; // Default if not found
+  
+  // Find the track in all displayed tracks (currently being viewed)
+  const trackElements = document.querySelectorAll('.track-card');
+  trackElements.forEach(element => {
+    const button = element.querySelector('.track-playlist-btn');
+    if (button && button.dataset.trackId === trackId) {
+      const heading = element.querySelector('h4');
+      if (heading) trackName = heading.textContent;
+    }
+  });
+  
+  // Store the track ID and name together
+  const trackInfo = {
+    id: trackId,
+    name: trackName
+  };
+  
   if (playlists.length === 0) {
     // Create a default playlist if none exist
     const newPlaylist = createPlaylist("My Playlist", "Default playlist for tracks");
-    toggleSongInPlaylist(newPlaylist.id, trackId);
+    toggleSongInPlaylist(newPlaylist.id, trackInfo);
   } else {
     // Show playlist selection (you can enhance this later)
     const firstPlaylist = playlists[0];
-    toggleSongInPlaylist(firstPlaylist.id, trackId);
+    toggleSongInPlaylist(firstPlaylist.id, trackInfo);
   }
   
   // Re-render playlists to show updated state
@@ -302,32 +329,27 @@ if (modalPlaylistForm) {
     const desc = modalPlaylistDesc.value.trim();
     if (!name) return;
 
-     // Prevent duplicate playlist names (case-insensitive)
+    // Prevent duplicate playlist names (case-insensitive)
     const allPlaylists = getAllPlaylists() || [];
     if (allPlaylists.some(pl => (pl.name || "").toLowerCase() === name.toLowerCase())) {
       alert("A playlist with this name already exists.");
       return;
     }
     
+    // Create the playlist
     createPlaylist(name, desc);
-    renderPlaylists(); // Read all playlists and optionally filter by name/description
-  let all = getAllPlaylists() || [];
-  const q = (filterQuery || "").trim().toLowerCase();
-  if (q) {
-    all = all.filter(pl =>
-      (pl.name || "").toLowerCase().includes(q) ||
-      (pl.description || "").toLowerCase().includes(q)
-    );
-  }
-  
-  if (all.length === 0) {
-    playlistList.innerHTML = "<p>No playlists yet.</p>";
-    return;
-  }
+    
+    // Clear the form
+    modalPlaylistName.value = "";
+    modalPlaylistDesc.value = "";
+    
+    // Close the modal
     createPlaylistModal.style.display = "none";
+    
+    // Re-render playlists to show the new one
+    renderPlaylists();
   });
 }
-
 // Handle cancel button
 if (cancelCreatePlaylist) {
   cancelCreatePlaylist.addEventListener("click", () => {
@@ -413,19 +435,21 @@ function renderPlaylists(filterQuery = "") {
     const songsList = document.createElement("ul");
     songsList.className = "playlist-songs";
 
-    pl.songs.forEach(songId => {
-      const li = document.createElement("li");
-      const album = albumCache.find(a => a.idAlbum === songId);
-      const title = album ? album.strAlbum : songId;
-      li.innerHTML = `
-        <span>${title}</span>
-        <button class="remove-song"
-                data-playlist-id="${pl.id}"
-                data-album-id="${songId}"
-        >&times;</button>
-      `;
-      songsList.appendChild(li);
-    });
+      pl.songs.forEach(song => {
+    const li = document.createElement("li");
+    // Handle both new format (objects) and old format (just IDs)
+    const songId = typeof song === 'object' ? song.id : song;
+    const title = typeof song === 'object' ? song.name : songId;
+    
+    li.innerHTML = `
+      <span>${title}</span>
+      <button class="remove-song"
+              data-playlist-id="${pl.id}"
+              data-album-id="${songId}"
+      >&times;</button>
+    `;
+    songsList.appendChild(li);
+  });
 
     card.appendChild(songsList);
     playlistList.appendChild(card);
