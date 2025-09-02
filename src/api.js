@@ -58,7 +58,7 @@ const cache = {}
 export async function fetchAlbumsByArtistName(artistName) {
   
   if (artistName in cache) {
-    console.log(`[cache] hit for ID=${artistId} (length=${cache[artistId].length})`);
+    console.log(`[cache] hit for ID=${artistId} (length=${cache[artistName].length})`);
     return cache[artistName];
   }
   const url = `${TADB_BASE_URL}/${TADB_API_KEY}/searchalbum.php?s=${encodeURIComponent(artistName)}`;
@@ -77,7 +77,7 @@ export async function fetchAlbumsByArtistName(artistName) {
 
   // 7. Cache the result (even if empty) and return it
   cache[artistName] = albums;
-  console.log(`[cache] saved ${albums.length} item(s) for ID=${artistId}`);
+  console.log(`[cache] saved ${albums.length} item(s) for artist=${artistName}`);
 
   return albums;
 }
