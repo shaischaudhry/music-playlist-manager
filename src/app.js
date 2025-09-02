@@ -1,6 +1,9 @@
-// src/app.js
-
-import { fetchAlbumsByArtistId, searchArtistsByName, fetchPopularArtists } from "./api.js";
+import { 
+  getHomeArtistsMusicBrainz, 
+  fetchAlbumsByArtistName, 
+  fetchTracksByAlbumId,
+  getArtistByName_TheAudioDB
+} from "./api.js";
 import { filterAlbums }          from "./utils.js";
 import {
   getAllPlaylists,
@@ -37,7 +40,7 @@ let albumCache = [];
 //
 async function loadPopularArtists() {
   try {
-    const artists = await fetchPopularArtists();
+    const artists = await getHomeArtistsMusicBrainz('rock', 15)
     renderPopularArtists(artists);
   } catch (error) {
     console.error("Error loading popular artists:", error);
@@ -61,8 +64,8 @@ function renderPopularArtists(artists) {
       <div class="thumb">
         <span>🎵</span>
       </div>
-      <h3>${artist.strArtist || 'Unknown Artist'}</h3>
-      <p class="meta">${artist.strGenre || 'Artist'}</p>
+      <h3>${artist.name || 'Unknown Artist'}</h3>
+      <p class="meta">${artist.type || 'Artist'}</p>
     `;
     
     artistList.appendChild(card);
@@ -81,7 +84,13 @@ async function selectPopularArtist(artist) {
   
   // Load albums for this artist
   try {
-    const albums = await fetchAlbumsByArtistId(artist.idArtist);
+    const tadbArtist = await getArtistByName_TheAudioDB(artist.name);
+      if (!tadbArtist) {
+         albumsContainer.innerHTML = "<p class='error'>No albums found for this artist.</p>";
+        return;
+      }
+
+const albums = await fetchAlbumsByArtistName(tadbArtist[0].strArtist);
     albumCache = albums;
     renderAlbums(albumCache);
     renderPlaylists();
@@ -107,6 +116,7 @@ function renderAlbums(albums) {
   albums.forEach(album => {
     const card = document.createElement("div");
     card.className = "album-card";
+    card.addEventListener("click", () => selectAlbum(album));
 
     card.innerHTML = `
       <img
@@ -137,7 +147,44 @@ function renderAlbums(albums) {
   });
 }
 
-// 4. Render playlist cards (now with song lists and remove‐song buttons)
+//
+// 6. Handle album selection and load tracks
+//
+async function selectAlbum(album) {
+  try {
+    const tracks = await fetchTracksByAlbumId(album.idAlbum);
+    // Show tracks in UI (you'll need to create this)
+    renderTracks(tracks);
+  } catch (error) {
+    console.error("Error loading tracks:", error);
+    alert("Error loading tracks for this album.");
+  }
+}
+
+//
+// 7. Render track cards
+//
+function renderTracks(tracks) {
+  const tracksContainer = document.getElementById("tracks-container");
+  const tracksSection = document.getElementById("tracks-section");
+  
+  if (!tracksContainer) return;
+  
+  tracksSection.style.display = "block";
+  tracksContainer.innerHTML = "";
+  
+  tracks.forEach(track => {
+    const trackElement = document.createElement("div");
+    trackElement.className = "track-card";
+    trackElement.innerHTML = `
+      <h4>${track.strTrack || 'Unknown Track'}</h4>
+      <p>Duration: ${track.intDuration ? Math.floor(track.intDuration / 1000) + 's' : 'Unknown'}</p>
+      <button onclick="addTrackToPlaylist('${track.idTrack}')">+ Add to Playlist</button>
+    `;
+    tracksContainer.appendChild(trackElement);
+  });
+}
+
 // Accept an optional filter query (string)
 function renderPlaylists(filterQuery = "") {
   playlistList.innerHTML = "";
@@ -206,16 +253,16 @@ loadBtn.addEventListener("click", async () => {
 
   try {
     // First search for the artist by name
-    const artists = await searchArtistsByName(artistName);
+    const artists = await getArtistByName_TheAudioDB(artistName);
     
-    if (artists.length === 0) {
+    if (!artists.length) {
       albumsContainer.innerHTML = "<p class='error'>No artists found with that name.</p>";
       return;
     }
     
     // Use the first artist found to get albums
     const firstArtist = artists[0];
-    const albums = await fetchAlbumsByArtistId(firstArtist.idArtist);
+    const albums = await fetchAlbumsByArtistName(firstArtist.strArtist);
     albumCache = albums;
     renderAlbums(albumCache);
     renderPlaylists();  // also re-render playlists to show song lists
