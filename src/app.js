@@ -30,6 +30,13 @@ const playlistName     = document.getElementById("playlistName");
 const playlistDesc     = document.getElementById("playlistDesc");
 const playlistList     = document.getElementById("playlistList");
 
+// Grab modal elements
+const createPlaylistModal = document.getElementById("createPlaylistModal");
+const modalPlaylistForm = document.getElementById("modalPlaylistForm");
+const modalPlaylistName = document.getElementById("modalPlaylistName");
+const modalPlaylistDesc = document.getElementById("modalPlaylistDesc");
+const cancelCreatePlaylist = document.getElementById("cancelCreatePlaylist");
+
 //
 // 2. In-memory cache for fetched albums
 //
@@ -136,21 +143,8 @@ function renderAlbums(albums) {
       <h3>${album.strAlbum || 'Unknown Title'}</h3>
       <p>${album.intYearReleased || 'Year N/A'}</p>
       <p>${album.strGenre || 'Genre N/A'}</p>
-      <select class="playlist-select" data-album-id="${album.idAlbum}">
-        <option value="">+ Add to playlist…</option>
-        ${playlists.map(pl => `<option value="${pl.id}">${pl.name}</option>`).join("")}
-      </select>
     `;
 
-    const select = card.querySelector(".playlist-select");
-    select.addEventListener("change", e => {
-      const playlistId = e.target.value;
-      if (!playlistId) return;
-
-      toggleSongInPlaylist(playlistId, album.idAlbum);
-      renderPlaylists();
-      e.target.value = "";
-    });
 
     albumsContainer.appendChild(card);
   });
@@ -179,18 +173,51 @@ function renderTracks(tracks) {
   
   if (!tracksContainer) return;
   
+  albumsContainer.style.visibility = "hidden";
   tracksSection.style.display = "block";
+  tracksSection.style.marginTop = "0";
+  tracksSection.style.order = "-1"; // Move to top
+
+
   tracksContainer.innerHTML = "";
   
-  tracks.forEach(track => {
+  tracks.forEach((track, trackIndex) => {
     const trackElement = document.createElement("div");
     trackElement.className = "track-card";
     trackElement.innerHTML = `
       <h4>${track.strTrack || 'Unknown Track'}</h4>
-      <p>Duration: ${track.intDuration ? Math.floor(track.intDuration / 1000) + 's' : 'Unknown'}</p>
-      <button onclick="addTrackToPlaylist('${track.idTrack}')">+ Add to Playlist</button>
+            <p>Duration: ${track.intDuration ? formatDuration(track.intDuration) : 'Unknown'}</p>
+                 <button class="track-playlist-btn" data-track-id="${track.idTrack}">
+        ${isTrackInPlaylist(track.idTrack) ? 'Remove from Playlist' : '+ Add to Playlist'}
+      </button>
     `;
     tracksContainer.appendChild(trackElement);
+
+    const playlistButton = trackElement.querySelector('.track-playlist-btn');
+    playlistButton.addEventListener('click', () => {
+      if (isTrackInPlaylist(track.idTrack)) {
+        // Remove from playlist
+        removeTrackFromPlaylist(track.idTrack);
+      } else {
+        // Add to playlist
+        addTrackToPlaylist(track.idTrack);
+      }
+      // Re-render tracks to update button text
+      renderTracks(tracks);
+    });
+
+
+    // Add back button to return to albums (only for first track)
+    if (trackIndex === 0) {
+      const backButton = document.createElement("button");
+      backButton.className = "back-to-albums-btn";
+      backButton.textContent = "← Back to Albums";
+      backButton.addEventListener('click', () => {
+        tracksSection.style.display = "none";
+        albumsContainer.style.visibility = "visible";
+      });
+      tracksContainer.insertBefore(backButton, tracksContainer.firstChild);
+    }
   });
 }
 
@@ -203,8 +230,8 @@ function addTrackToPlaylist(trackId) {
   
   if (playlists.length === 0) {
     // Create a default playlist if none exist
-    const playlistId = createPlaylist("My Playlist", "Default playlist for tracks");
-    toggleSongInPlaylist(playlistId, trackId);
+    const newPlaylist = createPlaylist("My Playlist", "Default playlist for tracks");
+    toggleSongInPlaylist(newPlaylist.id, trackId);
   } else {
     // Show playlist selection (you can enhance this later)
     const firstPlaylist = playlists[0];
@@ -214,6 +241,39 @@ function addTrackToPlaylist(trackId) {
   // Re-render playlists to show updated state
   renderPlaylists();
 }
+//
+// 9. Remove track from playlist
+//
+function removeTrackFromPlaylist(trackId) {
+  const playlists = getAllPlaylists();
+  for (const playlist of playlists) {
+    if (playlist.songs.includes(trackId)) {
+      toggleSongInPlaylist(playlist.id, trackId);
+      break;
+    }
+  }
+  renderPlaylists();
+}
+
+//
+// 9. Format duration from milliseconds to MM:SS
+//
+function formatDuration(milliseconds) {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+//
+// 10. Check if track is already in any playlist
+//
+function isTrackInPlaylist(trackId) {
+  const playlists = getAllPlaylists();
+  return playlists.some(playlist => 
+    playlist.songs.includes(trackId)
+  );
+}
+
 function toggleSearchAlbumsSection(show) {
   const searchAlbumsSection = document.getElementById("searchAlbumsSection");
   if (searchAlbumsSection) {
@@ -221,8 +281,71 @@ function toggleSearchAlbumsSection(show) {
   }
 }
 
+// Show modal when "Create Playlist" button is clicked
+document.addEventListener('DOMContentLoaded', () => {
+  const createPlaylistBtn = document.getElementById('createPlaylistBtn');
+  if (createPlaylistBtn) {
+    createPlaylistBtn.addEventListener('click', () => {
+      createPlaylistModal.style.display = "flex";
+      modalPlaylistName.value = "";
+      modalPlaylistDesc.value = "";
+      modalPlaylistName.focus();
+    });
+  }
+});
+
+// Handle modal form submission
+if (modalPlaylistForm) {
+  modalPlaylistForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const name = modalPlaylistName.value.trim();
+    const desc = modalPlaylistDesc.value.trim();
+    if (!name) return;
+
+     // Prevent duplicate playlist names (case-insensitive)
+    const allPlaylists = getAllPlaylists() || [];
+    if (allPlaylists.some(pl => (pl.name || "").toLowerCase() === name.toLowerCase())) {
+      alert("A playlist with this name already exists.");
+      return;
+    }
+    
+    createPlaylist(name, desc);
+    renderPlaylists(); // Read all playlists and optionally filter by name/description
+  let all = getAllPlaylists() || [];
+  const q = (filterQuery || "").trim().toLowerCase();
+  if (q) {
+    all = all.filter(pl =>
+      (pl.name || "").toLowerCase().includes(q) ||
+      (pl.description || "").toLowerCase().includes(q)
+    );
+  }
+  
+  if (all.length === 0) {
+    playlistList.innerHTML = "<p>No playlists yet.</p>";
+    return;
+  }
+    createPlaylistModal.style.display = "none";
+  });
+}
+
+// Handle cancel button
+if (cancelCreatePlaylist) {
+  cancelCreatePlaylist.addEventListener("click", () => {
+    createPlaylistModal.style.display = "none";
+  });
+}
+
+// Optional: Close modal when clicking outside modal content
+if (createPlaylistModal) {
+  createPlaylistModal.addEventListener("click", (e) => {
+    if (e.target === createPlaylistModal) {
+      createPlaylistModal.style.display = "none";
+    }
+  });
+}
+
 //
-// 10. Reset to homepage state
+// 12.. Reset to homepage state
 //
 function resetToHomepage() {
   // Show top picks section
@@ -252,8 +375,17 @@ function resetToHomepage() {
 function renderPlaylists(filterQuery = "") {
   playlistList.innerHTML = "";
 
-  // Read all playlists and optionally filter by name/description
-  let all = getAllPlaylists() || [];
+  // Get all playlists BEFORE filtering
+  const allPlaylists = getAllPlaylists() || [];
+
+  // Show/hide playlist search bar based on whether there are any playlists at all
+  const playlistSearchContainer = document.getElementById("playlistSearchContainer");
+  if (playlistSearchContainer) {
+    playlistSearchContainer.style.display = allPlaylists.length === 0 ? "none" : "";
+  }
+
+  // Now filter for display
+  let all = allPlaylists;
   const q = (filterQuery || "").trim().toLowerCase();
   if (q) {
     all = all.filter(pl =>
@@ -356,7 +488,7 @@ searchInput.addEventListener("input", () => {
 //
 // 9. Create a new playlist
 //
-playlistForm.addEventListener("submit", e => {
+/*playlistForm.addEventListener("submit", e => {
   e.preventDefault();
   const name = playlistName.value.trim();
   const desc = playlistDesc.value.trim();
@@ -366,7 +498,7 @@ playlistForm.addEventListener("submit", e => {
   playlistName.value = "";
   playlistDesc.value = "";
   renderPlaylists();
-});
+});*/
 
 //
 // 10. Delete a playlist or a song within a playlist

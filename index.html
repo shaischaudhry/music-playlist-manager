@@ -21,12 +21,57 @@
           <input id="searchQuery" type="text" placeholder="Name, genre, or year" />
         </div>
       </section>
-
-      <section id="top-picks" class="section">
-        <h3 style="margin:0 0 8px 0">Top picks</h3>
-        <div id="artistList" class="grid">
-          </div>
-      </section>
+            <div id="createPlaylistModal" class="modal" style="display:none;">
+              <div class="modal-content">
+                <h2>Create Playlist</h2>
+                <form id="modalPlaylistForm">
+                  <label for="modalPlaylistName">Playlist Name</label>
+                  <input id="modalPlaylistName" type="text" required />
+                  <label for="modalPlaylistDesc">Description (optional)</label>
+                  <input id="modalPlaylistDesc" type="text" />
+                  <div class="modal-actions">
+                    <button type="submit">Create</button>
+                    <button type="button" id="cancelCreatePlaylist">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <!-- Phase 4: Playlist Management - MOVED TO TOP -->
+            <section id="playlists">
+              <h2>Playlists</h2>
+              
+              <div id="playlistSearchContainer" class="playlist-search" role="search" aria-label="Search playlists">
+                <label for="playlistSearch" class="sr-only">Search playlists</label>
+                <div class="ps-input-wrap">
+                  <input
+                    id="playlistSearch"
+                    class="search-input"
+                    type="search"
+                    placeholder="Find playlist by name or description"
+                    aria-label="Search playlists"
+                  />
+                  <button id="playlistSearchBtn" class="search-button" aria-label="Search playlists">
+                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path fill="currentColor" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+      
+              <!-- Create Playlist Button -->
+              <button id="createPlaylistBtn" class="create-playlist-btn">+ Create Playlist</button>
+      
+              <!-- Where playlist cards will appear -->
+              <div id="playlistList">
+                <!-- JavaScript will fill this with playlist cards -->
+              </div>
+            </section>
+      
+            <section id="top-picks" class="section">
+              <h3 style="margin:0 0 8px 0">Top picks</h3>
+              <div id="artistList" class="grid">
+                </div>
+            </section>
 
       <section id="albums" aria-live="polite" style="display: grid; visibility: hidden;">
         <!-- Albums will be loaded here -->
@@ -36,56 +81,6 @@
         <h3>Tracks</h3>
         <div id="tracks-container"></div>
       </section>
-
-        <!-- Phase 4: Playlist Management -->
-  <section id="playlists">
-    <h2>Playlists</h2>
-    
-   <div id="playlistSearchContainer" class="playlist-search" role="search" aria-label="Search playlists">
-  <label for="playlistSearch" class="sr-only">Search playlists</label>
-  <div class="ps-input-wrap">
-    <input
-      id="playlistSearch"
-      class="search-input"
-      type="search"
-      placeholder="Find playlist by name or description"
-      aria-label="Search playlists"
-    />
-    <button id="playlistSearchBtn" class="search-button" aria-label="Search playlists">
-      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path fill="currentColor" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>
-      </svg>
-    </button>
-  </div>
-</div>
-
-
-  
-</div>
-    <!-- 1. Create Playlist Form -->
-    <form id="playlistForm">
-      <!-- Text input for playlist name -->
-      <input
-        id="playlistName"
-        type="text"
-        placeholder="Playlist name"
-        required
-      />
-      <!-- Optional description -->
-      <input
-        id="playlistDesc"
-        type="text"
-        placeholder="Description (optional)"
-      />
-      <!-- Submit button -->
-      <button type="submit">Create</button>
-    </form>
-
-    <!-- 2. Where playlist cards will appear -->
-    <div id="playlistList">
-      <!-- JavaScript will fill this with playlist cards -->
-    </div>
-  </section>
 
     </main>
 
