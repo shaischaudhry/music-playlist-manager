@@ -21,7 +21,21 @@
           <input id="searchQuery" type="text" placeholder="Name, genre, or year" />
         </div>
       </section>
-
+            <div id="createPlaylistModal" class="modal" style="display:none;">
+              <div class="modal-content">
+                <h2>Create Playlist</h2>
+                <form id="modalPlaylistForm">
+                  <label for="modalPlaylistName">Playlist Name</label>
+                  <input id="modalPlaylistName" type="text" required />
+                  <label for="modalPlaylistDesc">Description (optional)</label>
+                  <input id="modalPlaylistDesc" type="text" />
+                  <div class="modal-actions">
+                    <button type="submit">Create</button>
+                    <button type="button" id="cancelCreatePlaylist">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            </div>
             <!-- Phase 4: Playlist Management - MOVED TO TOP -->
             <section id="playlists">
               <h2>Playlists</h2>
