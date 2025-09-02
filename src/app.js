@@ -185,6 +185,27 @@ function renderTracks(tracks) {
   });
 }
 
+//
+// 8. Add track to playlist functionality
+//
+function addTrackToPlaylist(trackId) {
+  // Get all playlists
+  const playlists = getAllPlaylists();
+  
+  if (playlists.length === 0) {
+    // Create a default playlist if none exist
+    const playlistId = createPlaylist("My Playlist", "Default playlist for tracks");
+    toggleSongInPlaylist(playlistId, trackId);
+  } else {
+    // Show playlist selection (you can enhance this later)
+    const firstPlaylist = playlists[0];
+    toggleSongInPlaylist(firstPlaylist.id, trackId);
+  }
+  
+  // Re-render playlists to show updated state
+  renderPlaylists();
+}
+
 // Accept an optional filter query (string)
 function renderPlaylists(filterQuery = "") {
   playlistList.innerHTML = "";
