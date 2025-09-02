@@ -82,6 +82,10 @@ async function selectPopularArtist(artist) {
     topPicksSection.style.display = "none";
   }
   
+    // Hide albums section initially while loading
+    albumsContainer.style.display = "none";
+    toggleSearchAlbumsSection(false);
+    
   // Load albums for this artist
   try {
     const tadbArtist = await getArtistByName_TheAudioDB(artist.name);
@@ -104,6 +108,11 @@ const albums = await fetchAlbumsByArtistName(tadbArtist[0].strArtist);
 // 3. Render album cards (with "Add to playlist" dropdown)
 //
 function renderAlbums(albums) {
+  
+  // Show albums section and search albums section
+  albumsContainer.style.display = "block";
+  toggleSearchAlbumsSection(true);
+
   albumsContainer.innerHTML = "";
 
   if (albums.length === 0) {
@@ -205,6 +214,39 @@ function addTrackToPlaylist(trackId) {
   // Re-render playlists to show updated state
   renderPlaylists();
 }
+function toggleSearchAlbumsSection(show) {
+  const searchAlbumsSection = document.getElementById("searchAlbumsSection");
+  if (searchAlbumsSection) {
+    searchAlbumsSection.style.display = show ? "flex" : "none";
+  }
+}
+
+//
+// 10. Reset to homepage state
+//
+function resetToHomepage() {
+  // Show top picks section
+  const topPicksSection = document.getElementById("top-picks");
+  if (topPicksSection) {
+    topPicksSection.style.display = "block";
+  }
+  
+  // Hide albums section
+  albumsContainer.style.display = "none";
+  
+  // Hide search albums section
+  toggleSearchAlbumsSection(false);
+  
+  // Clear albums container
+  albumsContainer.innerHTML = "";
+  
+  // Clear search inputs
+  artistIdInput.value = "";
+  searchInput.value = "";
+  
+  // Disable load button
+  loadBtn.disabled = true;
+}
 
 // Accept an optional filter query (string)
 function renderPlaylists(filterQuery = "") {
@@ -270,6 +312,16 @@ artistIdInput.addEventListener("input", () => {
 //
 loadBtn.addEventListener("click", async () => {
   const artistName = artistIdInput.value.trim();
+  
+  const topPicksSection = document.getElementById("top-picks");
+  if (topPicksSection) {
+    topPicksSection.style.display = "none";
+  }
+  
+  // Hide albums section initially while loading
+  albumsContainer.style.display = "none";
+  toggleSearchAlbumsSection(false);
+  
   albumsContainer.innerHTML = "<p>Loading…</p>";
 
   try {
